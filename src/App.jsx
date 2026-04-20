@@ -7,7 +7,7 @@ const Shield = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
 
 // ─── Quiz Data & Flow ────────────────────────────────────────────────────────
 const NEXT_MAP = {
-  s0: 's1', s1: 's2', s2: 's3', s3: 's4', s4: 'lw1',
+  s0: 's1', s1: 's2', s2: 's3', s3: 'lw1',
   lw1: 'lw2', lw2: 'lw3', lw3: 'lw3b', lw3b: 'lw4',
   lw4: (a) => ['plateau', 'gained_back'].includes(a.lw4) ? 'lw5' : 'lw6',
   lw5: 'lw5b', lw5b: 'lw6',
@@ -26,10 +26,9 @@ const FLOW = {
   s1: { type: 'single', q: "What's your age group?", opts: ['18–29', '30–49', '50–69', '70+'].map(v=>({value:v, label:v})) },
   s2: { type: 'single', q: "What's your sex?", helper: "This helps us estimate your daily calorie needs.", opts: [{value:'male',label:'Male'}, {value:'female',label:'Female'}] },
   s3: { type: 'breather', getHeadline: (a) => a.s2 === 'male' ? "Millions of men have used BetterMeal to get leaner, stronger, and more energized." : "Millions of women have used BetterMeal to feel healthier, stronger, and more confident.", cta: "Let's go!", stats: true, autoAdvance: 5000 },
-  s4: { type: 'single', q: "What's your main goal?", opts: [ {value:'lose_weight', label:'🏃 Lose weight'}, {value:'healthier_habits', label:'🥗 Build healthier habits'}, {value:'improve_health', label:'❤️ Improve my health'}, {value:'more_energy', label:'⚡ Have more energy'}, {value:'more_confident', label:'✨ Feel more confident'} ] },
   lw1: { type: 'single', q: "Why do you want to lose weight?", opts: [ {value:'confident', label:'To feel more confident in my body'}, {value:'health', label:'To improve my overall health and energy'}, {value:'stop_overeating', label:'To stop overeating or emotional eating'}, {value:'special_event', label:'To get ready for a special event'}, {value:'other', label:'Something else'} ]},
   lw2: { type: 'multi', q: "What else would you like to achieve?", opts: [ {value:'relationship', label:'Improve my relationship with food'}, {value:'habits', label:'Build healthier habits'}, {value:'immune', label:'Boost my immune system'}, {value:'sleep', label:'Sleep better and have more energy'}, {value:'comfortable', label:'Feel comfortable in my body'}, {value:'none', label:'None of the above', isExclusive: true} ]},
-  lw3: { type: 'multi', q: "Imagine you've reached your goal. What excites you most about your future self?", opts: [ {value:'clothes', label:'Wearing the clothes I love'}, {value:'mirror', label:'Feeling proud and confident when I look in the mirror'}, {value:'energy', label:'Having more energy for my family and work'}, {value:'health', label:"Knowing I'm taking care of my health"}, {value:'measurements', label:'Seeing a real change in my body measurements'}, {value:'other', label:'Something else'} ]},
+  lw3: { type: 'multi', q: "What excites you most about reaching your goal?", opts: [ {value:'clothes', label:'Wearing the clothes I love'}, {value:'mirror', label:'Feeling proud and confident when I look in the mirror'}, {value:'energy', label:'Having more energy for my family and work'}, {value:'health', label:"Knowing I'm taking care of my health"}, {value:'measurements', label:'Seeing a real change in my body measurements'}, {value:'other', label:'Something else'} ]},
   lw3b: { type: 'breather', q: "You're already on the right track.", sub: "Setting clear goals is the first step to real change. You're already doing it.", cta: "Let's continue", autoAdvance: 4000 },
   lw4: { type: 'single', q: "What's your experience with losing weight?", opts: [ {value:'lost_before', label:"I've lost weight before and want to keep going"}, {value:'plateau', label:"I've tried before but never reached my goal"}, {value:'gained_back', label:"I've lost weight but always gained it back"}, {value:'first_time', label:"This is my first time trying"} ]},
   lw5: { type: 'multi', q: "What made it hard to lose weight in the past?", opts: [ {value:'motivation', label:'Staying motivated long enough'}, {value:'know_what_to_eat', label:'Knowing what to eat'}, {value:'too_busy', label:'Too busy to plan meals'}, {value:'emotional_eating', label:'Emotional eating or stress eating'}, {value:'plateau_stop', label:'Hitting a plateau and stopping'}, {value:'life_changed', label:'Life circumstances changed'}, {value:'medication', label:'Medication or health condition'}, {value:'other', label:'Other'} ]},
@@ -168,7 +167,7 @@ function LandingScreen({ goNext }) {
            <span className="text-xs font-extrabold uppercase tracking-widest text-[#437dff]">Preparing quiz...</span>
            <div className="w-full max-w-[200px] h-[5px] bg-[#e6f0ff] rounded-full overflow-hidden">
              <motion.div 
-               className="h-full bg-[#437dff] rounded-full" 
+               className="h-full bg-[#0BBC98] rounded-full" 
                initial={{ width: "0%" }} 
                animate={{ width: "100%" }} 
                transition={{ duration: 6, ease: "linear" }} 
@@ -223,7 +222,7 @@ function BreatherScreen({ screen, answers, goNext }) {
       <h2 className="text-3xl font-extrabold text-[#2b2b36] mb-4 leading-tight">{q}</h2>
       {sub && <p className="text-[#6e7079] text-lg font-medium mb-8 leading-relaxed">{sub}</p>}
       
-      <button onClick={goNext} className="w-full bg-[#2b2b36] text-white py-4 rounded-xl font-semibold text-lg mt-auto hover:bg-[#1a1a24] shadow-lg transition-all active:scale-95">
+      <button onClick={goNext} className="w-full bg-[#2b2b36] text-white py-4 rounded-[18px] font-semibold text-lg mt-auto hover:bg-[#1a1a24] shadow-lg transition-all active:scale-95">
         {screen.cta || "Continue"}
       </button>
     </div>
@@ -252,7 +251,7 @@ function EventDateScreen({ answers, setAnswers, goNext }) {
           ))}
         </div>
       </div>
-      <button onClick={goNext} disabled={!canContinue} className={`w-full py-4 rounded-xl font-bold text-lg mt-auto transition-all ${canContinue ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400'}`}>Continue</button>
+      <button onClick={goNext} disabled={!canContinue} className={`w-full py-4 rounded-[18px] font-bold text-lg mt-auto transition-all ${canContinue ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400'}`}>Continue</button>
     </div>
   )
 }
@@ -277,7 +276,7 @@ function BiometricsScreen({ answers, setAnswers, goNext }) {
           <input type="number" placeholder="75" className="w-full border-2 border-gray-200 rounded-xl p-4 text-lg outline-none focus:border-[#437dff]" value={w} onChange={e=>setAnswers(a=>({...a, c1_weight: e.target.value}))}/>
         </div>
       </div>
-      <button onClick={goNext} disabled={!canContinue} className={`w-full py-4 rounded-xl font-bold text-lg mt-auto transition-all ${canContinue ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400'}`}>Continue</button>
+      <button onClick={goNext} disabled={!canContinue} className={`w-full py-4 rounded-[18px] font-bold text-lg mt-auto transition-all ${canContinue ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400'}`}>Continue</button>
     </div>
   )
 }
@@ -306,7 +305,7 @@ function GoalScreen({ answers, setAnswers, goNext }) {
           </div>
         </div>
       </div>
-      <button onClick={goNext} disabled={!canContinue} className={`w-full py-4 rounded-xl font-bold text-lg mt-auto transition-all ${canContinue ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400'}`}>Continue</button>
+      <button onClick={goNext} disabled={!canContinue} className={`w-full py-4 rounded-[18px] font-bold text-lg mt-auto transition-all ${canContinue ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400'}`}>Continue</button>
     </div>
   )
 }
@@ -341,7 +340,7 @@ function LoaderScreen({ goNext }) {
         </div>
       </div>
       {step >= 4 ? (
-        <button onClick={goNext} className="w-full mt-auto py-4 rounded-xl font-bold text-lg bg-[#2b2b36] text-white shadow-xl hover:bg-[#1a1a24] active:scale-95 transition-all">Show My Plan</button>
+        <button onClick={goNext} className="w-full mt-auto py-4 rounded-[18px] font-bold text-lg bg-[#2b2b36] text-white shadow-xl hover:bg-[#1a1a24] active:scale-95 transition-all">Show My Plan</button>
       ) : (
         <div className="mt-auto pt-8 flex items-center justify-center gap-2 text-sm font-bold text-gray-600 bg-white py-3 px-6 rounded-2xl shadow-sm border border-gray-100">
            <Star/> 150,000+ people have received their plan
@@ -404,7 +403,7 @@ function ResultScreen({ answers, goNext }) {
          </ul>
       </div>
 
-      <button onClick={goNext} className="w-full py-4 rounded-xl font-bold text-lg bg-[#2b2b36] text-white shadow-xl mt-auto hover:bg-[#1a1a24] active:scale-95 transition-all">See My Plan</button>
+      <button onClick={goNext} className="w-full py-4 rounded-[18px] font-bold text-lg bg-[#2b2b36] text-white shadow-xl mt-auto hover:bg-[#1a1a24] active:scale-95 transition-all">See My Plan</button>
     </div>
   )
 }
@@ -457,7 +456,7 @@ function PaywallScreen({ answers }) {
          </button>
       </div>
 
-      <button className="w-full py-4 rounded-xl font-bold text-lg bg-[#2b2b36] text-white shadow-xl mb-8 hover:bg-[#1a1a24] active:scale-95 transition-all">Start My Plan</button>
+      <button className="w-full py-4 rounded-[18px] font-bold text-lg bg-[#2b2b36] text-white shadow-xl mb-8 hover:bg-[#1a1a24] active:scale-95 transition-all">Start My Plan</button>
 
       {/* Testimonial */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mt-auto">
@@ -537,7 +536,7 @@ export default function App() {
       {!noHeader && currentId !== 's0' && (
         <div className="px-5 pt-5 pb-1 z-10">
           <div className="h-[4px] bg-gray-200 rounded-full overflow-hidden">
-            <motion.div className="h-full bg-[#ff3b5c] rounded-full" initial={{ width: 0 }} animate={{ width: `${progressPct}%` }} transition={{ type: 'spring', stiffness: 200, damping: 26 }} />
+            <motion.div className="h-full bg-[#0BBC98] rounded-full" initial={{ width: 0 }} animate={{ width: `${progressPct}%` }} transition={{ type: 'spring', stiffness: 200, damping: 26 }} />
           </div>
         </div>
       )}
@@ -566,16 +565,30 @@ export default function App() {
                           const selected = isMulti ? (val||[]).includes(opt.value) : val === opt.value
                           return (
                             <ChoiceCard key={opt.value} label={opt.label} selected={selected} isMulti={isMulti} onClick={() => {
-                              if (isMulti) toggleMulti(currentId, opt.value, opt.isExclusive)
-                              else setAnswers(a=>({...a, [currentId]: opt.value}))
+                              if (isMulti) {
+                                toggleMulti(currentId, opt.value, opt.isExclusive)
+                              } else {
+                                const newAnswers = { ...answers, [currentId]: opt.value }
+                                setAnswers(newAnswers)
+                                setTimeout(() => {
+                                  const mapVal = NEXT_MAP[currentId]
+                                  const nextId = typeof mapVal === 'function' ? mapVal(newAnswers) : mapVal
+                                  if (nextId) {
+                                    setDir(1)
+                                    setHistory(h => [...h, nextId])
+                                  }
+                                }, 350)
+                              }
                             }}/>
                           )
                       })}
                     </div>
-                    <button onClick={goNext} disabled={!answers[currentId] || answers[currentId].length===0} 
-                      className={`mt-8 w-full py-4 rounded-xl font-bold text-lg transition-all ${answers[currentId] && answers[currentId].length>0 ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
-                      Continue
-                    </button>
+                    {screenDef.type !== 'single' && (
+                      <button onClick={goNext} disabled={!answers[currentId] || answers[currentId].length===0} 
+                        className={`mt-8 w-full py-4 rounded-[18px] font-bold text-lg transition-all ${answers[currentId] && answers[currentId].length>0 ? 'bg-[#2b2b36] text-white shadow-lg active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+                        Continue
+                      </button>
+                    )}
 
                   </div>
                 )}
