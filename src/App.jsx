@@ -18,7 +18,7 @@ const NEXT_MAP = {
   lw12: (a) => a.lw12 === 'yes_event' ? 'lw12b' : 'lw13',
   lw12b: 'lw13',
   lw13: 'lw13b', lw13b: 'lw14', lw14: 'lw14b', lw14b: 'lw15', lw15: 'lw15b', lw15b: 'c1',
-  c1: 'c2', c2: 'c3', c3: 'c4', c4: 'c5', c5: 'c6'
+  c1: 'c2', c2: 'c3', c3: 'c4', c4: 'c5', c5: 'c6', c6: 'c7'
 }
 
 const FLOW = {
@@ -56,7 +56,8 @@ const FLOW = {
   c3: { type: 'single', q: "How active are you on a typical day?", helper: "This is about your typical day — not your goals.", opts: [ {value:'1.2', label:'Mostly sitting (desk job, limited movement)'}, {value:'1.375', label:'Lightly active (some walking, occasional exercise)'}, {value:'1.55', label:'Moderately active (3–4 workouts/week)'}, {value:'1.725', label:'Very active (5+ intense sessions/week)'} ]},
   c4: { type: 'loader' },
   c5: { type: 'result' },
-  c6: { type: 'paywall' }
+  c6: { type: 'paywall' },
+  c7: { type: 'checkout' }
 }
 
 const variants = {
@@ -408,7 +409,7 @@ function ResultScreen({ answers, goNext }) {
   )
 }
 
-function PaywallScreen({ answers }) {
+function PaywallScreen({ answers, setAnswers, goNext }) {
   const isEE = answers.lw1 === 'stop_overeating' || (answers.lw5 || []).includes('emotional_eating') || ((answers.lw7 || []).filter(v=>['stress_eating','late_snacking','guilt'].includes(v)).length >= 2);
   const isEvent = answers.lw12 === 'yes_event';
 
@@ -417,6 +418,24 @@ function PaywallScreen({ answers }) {
   else if (isEE) headline = "Start breaking your emotional eating cycle today.";
 
   const [selected, setSelected] = useState('3m');
+  const [bumpChecked, setBumpChecked] = useState(false);
+  const [showUpsell, setShowUpsell] = useState(false);
+
+  const handleStartPlan = () => {
+    if (selected === '1m' || selected === '3m') {
+      setShowUpsell(true);
+    } else {
+      alert("Checkout: " + selected + (bumpChecked ? " + Order Bump" : ""));
+    }
+  };
+
+  const handleProceedCheckout = (finalPlan) => {
+    setShowUpsell(false);
+    setAnswers(a => ({ ...a, plan: finalPlan, orderBump: bumpChecked }));
+    setTimeout(() => {
+      goNext();
+    }, 300);
+  };
 
   return (
     <div className="flex flex-col h-full py-2">
@@ -456,7 +475,20 @@ function PaywallScreen({ answers }) {
          </button>
       </div>
 
-      <button className="w-full py-4 rounded-[18px] font-bold text-lg bg-[#2b2b36] text-white shadow-xl mb-8 hover:bg-[#1a1a24] active:scale-95 transition-all">Start My Plan</button>
+      {/* Order Bump */}
+      <div className={`p-4 border-2 rounded-2xl mb-6 cursor-pointer transition-colors ${bumpChecked ? 'border-[#437dff] bg-[#e6f0ff]' : 'border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100'}`} onClick={() => setBumpChecked(!bumpChecked)}>
+        <div className="flex items-start gap-3">
+          <div className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${bumpChecked ? 'bg-[#437dff] border-[#437dff]' : 'border-gray-400 bg-white'}`}>
+            {bumpChecked && <svg width="11" height="8" viewBox="0 0 11 8" fill="none"><path d="M1 3.5L4 6.5L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+          </div>
+          <div>
+             <h4 className="font-extrabold text-[#2b2b36] text-[15px] leading-tight mb-1">Yes, add the 100-Day Recipe Guide (+ $9.99)</h4>
+             <p className="text-xs text-gray-500 font-medium">Get lifetime access to our premium high-protein recipes. 80% of users choose this to speed up their progress.</p>
+          </div>
+        </div>
+      </div>
+
+      <button onClick={handleStartPlan} className="w-full py-4 rounded-[18px] font-bold text-lg bg-[#2b2b36] text-white shadow-xl mb-8 hover:bg-[#1a1a24] active:scale-95 transition-all">Start My Plan</button>
 
       {/* Testimonial */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mt-auto">
@@ -464,22 +496,170 @@ function PaywallScreen({ answers }) {
          <p className="text-sm font-medium text-gray-600 italic mb-3">"This app completely changed my approach. I've lost 15lbs and never felt deprived. It's built perfectly for my lifestyle."</p>
          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">— Sarah M.</p>
       </div>
+
+      <AnimatePresence>
+      {showUpsell && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.95, y: 20 }}
+             animate={{ opacity: 1, scale: 1, y: 0 }}
+             exit={{ opacity: 0, scale: 0.95, y: 20 }}
+             className="bg-white w-full max-w-[360px] rounded-3xl p-6 shadow-2xl relative"
+           >
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-[#437dff] rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                 <span className="text-3xl">🎁</span>
+              </div>
+              <div className="pt-10 text-center">
+                 <h2 className="text-2xl font-extrabold text-[#2b2b36] mb-3 leading-tight">Wait! Upgrade to 12 Months and save 60%</h2>
+                 <p className="text-sm font-medium text-gray-500 mb-6">Users who commit to a year are 3x more likely to reach their goal. Upgrade now for just $59.99 (only $1.25/week).</p>
+                 
+                 <div className="flex flex-col gap-3">
+                   <button onClick={() => {
+                     setSelected('12m');
+                     handleProceedCheckout('12m');
+                   }} className="w-full py-4 rounded-[18px] font-bold text-lg bg-[#437dff] text-white shadow-lg hover:bg-[#3266db] active:scale-95 transition-all">
+                     Upgrade My Plan
+                   </button>
+                   <button onClick={() => {
+                     handleProceedCheckout(selected);
+                   }} className="w-full py-3 rounded-[18px] font-bold text-[15px] text-gray-400 hover:text-gray-600 transition-colors">
+                     No thanks, keep my selection
+                   </button>
+                 </div>
+              </div>
+           </motion.div>
+        </div>
+      )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function CheckoutScreen({ answers }) {
+  const planPrices = { '1m': 14.99, '3m': 24.99, '12m': 59.99 };
+  const basePrice = planPrices[answers.plan || '3m'];
+  const total = basePrice + (answers.orderBump ? 9.99 : 0);
+
+  return (
+    <div className="flex flex-col h-full py-4 px-2">
+      <h1 className="text-3xl font-extrabold text-[#2b2b36] mb-8 text-center leading-tight">Complete your purchase</h1>
+      
+      {/* Express Checkout */}
+      <div className="flex flex-col gap-3 mb-8">
+        <button className="w-full bg-black text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.42 16.59c-.49.77-1 1.48-1.57 2.15-.89 1.1-1.74 2.22-3.1 2.25-1.34.03-1.76-.8-3.3-.8-1.52 0-2.02.8-3.26.83-1.3.03-2.3-1.2-3.32-2.47-2.1-2.65-3.56-6.84-2.48-9.75.52-1.42 1.54-2.5 2.87-3.1 1.25-.56 2.6-.54 3.78-.05 1.12.46 1.83.84 2.54.84.7 0 1.5-.42 2.76-.92 1.48-.56 2.9-.44 4.02.16 1.05.57 1.83 1.34 2.22 2.23-2.04 1.1-2.4 3.42-1.07 5.04.88 1.08 2.06 1.45 2.1 1.47-.03.07-.34 1.1-.9 1.9zM15.1 4.36c.64-.8 1.05-1.92.93-3.03-1.02.05-2.22.68-2.9 1.5-.6.7-1.1 1.86-.96 2.96 1.14.07 2.27-.63 2.93-1.43z"/>
+          </svg>
+          <span className="text-[17px]">Pay</span>
+        </button>
+        <button className="w-full bg-[#ffc439] text-[#003087] py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#f4bb36] transition-colors">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.11c-.473 0-.867.317-.98.775l-1.56 8.97a.276.276 0 0 1-.271.261z"/></svg>
+          <span className="text-[17px] italic">PayPal</span>
+        </button>
+      </div>
+
+      <div className="flex items-center gap-4 mb-8">
+        <div className="h-px bg-gray-200 flex-1"></div>
+        <span className="text-gray-400 font-bold text-sm">or pay with card</span>
+        <div className="h-px bg-gray-200 flex-1"></div>
+      </div>
+
+      {/* Stripe Card Form Mock */}
+      <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm mb-8">
+         <div className="mb-4">
+            <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-2">Card Information</label>
+            <div className="border-2 border-gray-200 rounded-xl overflow-hidden focus-within:border-[#437dff] transition-colors">
+               <div className="p-3.5 border-b-2 border-gray-200 flex items-center gap-2">
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                 <input type="text" placeholder="Card number" className="w-full outline-none font-medium text-[15px] placeholder:text-gray-400" />
+               </div>
+               <div className="flex">
+                  <input type="text" placeholder="MM / YY" className="w-1/2 p-3.5 outline-none font-medium text-[15px] border-r-2 border-gray-200 placeholder:text-gray-400" />
+                  <input type="text" placeholder="CVC" className="w-1/2 p-3.5 outline-none font-medium text-[15px] placeholder:text-gray-400" />
+               </div>
+            </div>
+         </div>
+         <div>
+            <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-2">Name on card</label>
+            <input type="text" placeholder="Full name" className="w-full border-2 border-gray-200 rounded-xl p-3.5 outline-none font-medium text-[15px] focus:border-[#437dff] transition-colors placeholder:text-gray-400" />
+         </div>
+      </div>
+
+      <button className="w-full py-4 rounded-[18px] font-bold text-lg bg-[#2b2b36] text-white shadow-xl mt-auto hover:bg-[#1a1a24] active:scale-95 transition-all">
+        Pay ${total.toFixed(2)}
+      </button>
+
+      <div className="flex items-center justify-center gap-2 mt-6 text-gray-400">
+         <Shield />
+         <span className="text-xs font-bold uppercase tracking-widest">Guaranteed Safe Checkout</span>
+      </div>
     </div>
   )
 }
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [history, setHistory] = useState(['s0'])
-  const [direction, setDir] = useState(1)
-  const [answers, setAnswers] = useState({})
+  const [history, setHistory] = useState(() => {
+    try {
+      const savedHistory = JSON.parse(localStorage.getItem('bm_history'));
+      const hashId = window.location.hash.replace('#', '');
+      
+      if (savedHistory && Array.isArray(savedHistory) && savedHistory.length > 0) {
+        if (!hashId || savedHistory[savedHistory.length - 1] === hashId) {
+          return savedHistory;
+        }
+        const idx = savedHistory.indexOf(hashId);
+        if (idx !== -1) {
+          return savedHistory.slice(0, idx + 1);
+        }
+      }
+    } catch(e) {}
+    return ['s0'];
+  });
+
+  const [direction, setDir] = useState(1);
+
+  const [answers, setAnswers] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('bm_answers'));
+      if (saved && typeof saved === 'object') return saved;
+    } catch(e) {}
+    return {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bm_history', JSON.stringify(history));
+    localStorage.setItem('bm_answers', JSON.stringify(answers));
+    
+    const currentId = history[history.length - 1];
+    const currentHash = window.location.hash.replace('#', '');
+    if (currentHash !== currentId) {
+      window.history.replaceState(null, '', `#${currentId}`);
+    }
+  }, [history, answers]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashId = window.location.hash.replace('#', '') || 's0';
+      setHistory(prev => {
+        const idx = prev.indexOf(hashId);
+        if (idx !== -1 && idx !== prev.length - 1) {
+          setDir(-1);
+          return prev.slice(0, idx + 1);
+        }
+        return prev;
+      });
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const currentId = history[history.length - 1]
   const screenDef = FLOW[currentId]
   
   // Progress Bar Calculation (approx 32 steps)
   const progressPct = currentId === 's0' ? 0 : currentId.startsWith('c') && !['c1','c2','c3'].includes(currentId) ? 100 : Math.min((history.length / 32) * 100, 96);
-  const noHeader = ['s0', 'c4', 'c5', 'c6'].includes(currentId);
+  const noHeader = ['s0', 'c4', 'c5', 'c6', 'c7'].includes(currentId);
 
   // ── helpers ──
   const goNext = () => {
@@ -599,7 +779,8 @@ export default function App() {
                 {screenDef.type === 'custom_goal' && <GoalScreen answers={answers} setAnswers={setAnswers} goNext={goNext} />}
                 {screenDef.type === 'loader' && <LoaderScreen goNext={goNext} />}
                 {screenDef.type === 'result' && <ResultScreen answers={answers} goNext={goNext} />}
-                {screenDef.type === 'paywall' && <PaywallScreen answers={answers} />}
+                {screenDef.type === 'paywall' && <PaywallScreen answers={answers} setAnswers={setAnswers} goNext={goNext} />}
+                {screenDef.type === 'checkout' && <CheckoutScreen answers={answers} />}
               </div>
             </motion.div>
           </AnimatePresence>
